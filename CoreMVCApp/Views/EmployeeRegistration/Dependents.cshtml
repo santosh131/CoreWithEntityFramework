@@ -1,0 +1,70 @@
+﻿@model CoreMVCApp.Models.DependentsViewModel
+ 
+<input type="hidden" id="hdDependentsEmpId" value="@Model.EmployeeId" />
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.DependentsModel.FirstName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DependentsModel.LastName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DependentsModel.Relationship)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DependentsModel.EmployeeId)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.DependentsModels) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.FirstName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.LastName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Relationship)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EmployeeId)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.DependentId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.DependentId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.DependentId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+<p><button type"button" id="btnCreateDependents" class="btn btn-primary">Create</button></p>
+
+<div id="dependentsChildContainer">
+
+</div>
+
+<script>
+    $(function(){
+        if (SetTabId) {
+            SetTabId("2");
+        }
+        var loadDependents = function(url, childContainerId){
+            fetch(url).then((response)=>{
+                return response.text();
+            }).then((result)=>{
+                $("#" + childContainerId).html(result);
+            });
+        }
+        $("#btnCreateDependents").click(function(e){
+            var empId = $("#hdDependentsEmpId").val();
+            loadDependents(`/EmployeeRegistration/CreateDependents?employeeId=${empId}`, 'dependentsChildContainer')
+            e.preventDefault();
+        });
+    });
+</script>

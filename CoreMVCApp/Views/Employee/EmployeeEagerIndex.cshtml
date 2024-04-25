@@ -1,0 +1,25 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+Employee Eager loading
+
+Look for EmployeeModel(Parent) & DependentsModel(Child)
+
+<div>
+    <h4>EmployeeModel(Parent)</h4>
+
+    public List&lt;DependentsModel&gt;? Dependents { get; set; }
+</div>
+
+<div>
+    <h4>DependentsModel(Child)</h4>
+    [Column("employee_id")]<br />
+    public int? EmployeeId { get; set; } //parent's primary key<br />
+    
+    public EmployeeModel? Employee { get; set; }
+</div>
+<p>
+    We must call .Include method to get the Dependents
+</p>

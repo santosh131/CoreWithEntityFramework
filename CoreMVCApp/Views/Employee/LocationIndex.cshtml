@@ -1,0 +1,34 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+Location Lazy loading 
+
+<div>
+builder.Services.AddDbContext...
+    (options =>
+    {
+        options
+        .UseLazyLoadingProxies() //set this for lazy loading
+    
+    });
+</div>
+<div>
+Look for LocationsModel(Parent) & DepartmentsModel(Child)
+
+<h4>LocationsModel(Parent)</h4>
+    public virtual ICollection&lt;DepartmentsModel&gt;? Departments { get; set; } //Lazy loading: mark the property virtual
+</div>
+
+<div>
+    <h4>DepartmentsModel(Child)</h4>
+    [Column("location_id")]<br />
+    public int? LocationId { get; set; } //parent's primary key<br />
+
+     public virtual LocationsModel? Location { get; set; } //lazy loading : mark the property virtual
+</div>
+<p>
+    No need to call the .Include method to get the Departments
+</p>
+

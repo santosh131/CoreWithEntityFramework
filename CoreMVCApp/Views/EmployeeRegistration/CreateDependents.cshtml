@@ -1,0 +1,52 @@
+﻿@model CoreMVCApp.Entities.DependentsModel
+
+<h4>Create Dependent</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="CreateDependents" id="frmDependent">
+            <input type="hidden" asp-for="EmployeeId" class="form-control" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="FirstName" class="control-label"></label>
+                <input asp-for="FirstName" class="form-control" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LastName" class="control-label"></label>
+                <input asp-for="LastName" class="form-control" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Relationship" class="control-label"></label>
+                <input asp-for="Relationship" class="form-control" />
+                <span asp-validation-for="Relationship" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <button type="button" id="btnSaveCreateDependent" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div>
+    <button type="button" id="btnCancelCreateDependent" class="btn btn-primary">Cancel</button>
+</div>
+
+<script>
+    $(function(){
+
+        $("#btnSaveCreateDependent").click(function (e) {
+            var form = document.getElementById("frmDependent");
+            var data = new FormData(form);
+            postData(`/EmployeeRegistration/CreateDependents`, data, "childContainer");
+            e.preventDefault();
+        });
+        $("#btnCancelCreateDependent").click(function(e){
+            $("#dependentsChildContainer").html("");
+            e.preventDefault();
+        });
+    });
+</script>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
