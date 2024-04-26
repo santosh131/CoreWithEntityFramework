@@ -1,9 +1,9 @@
 # EntityFramework
-It is an object/relational mapping framework. EF core supports two development appraoches
+It is an object/relational mapping framework. EF core supports two development approaches
 a) Code- First (Domain driven design)
 b) Database -First 
 
-CF core uses provider model to access many different databases. EF Core includes providers such as Nuget pacakges which we need to install  
+EF core uses provider model to access many different databases. EF Core includes providers such as Nuget pacakges which we need to install  
 
 DB: **Sql Server**  
 Nuget: **Microsoft.EntityFrameworkCore.SqlServer**  
@@ -17,6 +17,7 @@ To treat the domain classes as entities we need to include them as DbSet<T> prop
 EF core migrations are a set of commands which can be executed in **package manager console** or .**Net core CLI**  
 
 Nuget: **Microsot.EntityframeworkCore.Tools**  
+> Run **Enable-Migrations** command in the Package Manger console to enable migrations for the context
 
 | Package Manager Console 	| .Net Core CLI                    	|
 |-------------------------	|----------------------------------	|
@@ -32,7 +33,7 @@ Nuget: **Microsot.EntityframeworkCore.Tools**
 | Script-Migration        	| dotnet ef migrations script      	|  
 
 
-# Reference Navigation  
+# Navigation  
 Navigations comes in  two forms
 ## Reference  
 ## Collection  
@@ -88,5 +89,116 @@ public class Tag {
 
  public IEnumerable<Blog> Blogs { get; set; } =new List<Blog>(); //Collection navigation  
 }
+```  
+
+# Configuring Domain Classes
+- DataAnnotation Attributes
+- FluentApi
+
+>EntityFramework uses the Code First naming conventions to map classes to database. If the conventions are not followed while defining the classes Fluent Api or Data annotations can be used to configure the classes.  
+
+## DataAnnotation Attributes  
+
+- **Key** annotation is used to specify that property is EntityKey(primary key)
+- **Required** annotation is used to specify that property is required. With no additional code or markup change  
+ in application an MVC application will perform client side application building a message in property and annotation names.
+- **MaxLength, MinLength** annotation is similar to **Required** annotation, builds error message dynamically. These specify how many chars are allowed/stored in database.
+- **StringLength** annotation is similar to MaxLength, it specififes how chars are allowed in data field.
+- **NotMapped** annotation is used to specify that property is not mapped to database.
+- **Table** annotation is used to map the table name to the class  
+- **Column** annotation is used to map the column name to the property 
+- **Index** annotation is used to create the index on the column in database  
+
 ```
+ [Table("employees")]  
+ public class EmployeeModel  
+ {  
+    [Key]  
+    [Column("employee_id")]  
+    public int? EmployeeId { get; set; }  
+
+    [Column("first_name", TypeName = "ntext")]  
+    [Required(AllowEmptyStrings = false, ErrorMessage = "Please enter First Name")] 
+    [MaxLength(30, ErrorMessage = "First Name can have maximum of 30 chars")]
+    [MinLength(5, ErrorMessage = "First Name should have minimum 5 chars")]     
+    public string FirstName { get; set; }  
+    
+    [Column("last_name")]  
+    [AllowNull]  
+    [StringLength(50, ErrorMessage = "50 chars are allowed" )]  
+    public string? LastName { get; set; }  
+
+    [NotMapped]
+    public string FullName { 
+        get  {
+            return LastName + ", " +  FirstName;
+        }
+    }
+ }  
+```
+### Data Annotations - Foreign Key  
+ 
+## FluentApi  
+  
+> Foreign Key properties can be configured by using HasFoerignKey method which takes lambda expression that represents the property to be used as properties.
+
+| Method          	| Usage                                                    	|
+|-----------------	|----------------------------------------------------------	|
+| HasKey          	| Property as Primary Key                                  	|
+| HasForeignKey   	| Property as Foreign Key                                  	|
+| HasColumnName   	| Configures database column name of the property          	|
+| HasColumnType   	| Configures database column type of the property          	|
+| HasDefaultValue 	| default value for a database column mapped to a property 	|
+| HasOne          	| Represents one side one to many relationship             	|
+| WithMany        	| Represents many side of one to many relationship         	|
+| HasMany         	| Represents many side of one to many relationship         	|
+| WithOne         	| Represents one side one to many relationship             	|  
+
+```
+public class Author{  
+    public int AuthorId { get; set;}    //Primary Key  
+    public string Name { get; set;}  
+    public List<Book>? Books { get; set;} //Navigation Property , Collection Navigation
+}  
+  
+public class Book{  
+    public int BookId { get; set;}    //Primary Key  
+    public string Name { get; set;}  
+    public int BookId { get; set;}    //Foreign Key  
+    public Author? Author { get; set;} //Navigation Property , Reference Navigation  
+}  
+```
+
+### One to One  
+- Configuring Parent to Child - HasOne/Withone pattern
+```
+ .HasOne(a => a.Header)
+ .WithOne(b => b.Blog)
+ .HasForeignKey<BlogHeader>(b => b.BlogId)
+```
+- Configuring Child to Parent - HasOne/Withone pattern
+```
+ .HasOne(b => b.Blog)
+ .WithOne(a => a.Header)
+ .HasForeignKey<BlogHeader>(b => b.BlogId)
+```
+  
+### One to Many  
+- Configuring Parent to Child  - HasMany/WithOne pattern
+```
+ .HasMany(a => a.Books) // Author has many Books
+ .WithOne(b => b.Author) //Book is associated with one Author
+ .HasForeignKey(b => b.AuthorId) //AuthorId is ForeignKey in Books
+```
+  
+- Configuring Child to Parent  - HasOne/WithMany pattern
+```
+ .HasOne(a => a.Author) //Book is associated with one Author
+ .WithMany(b => b.Books) // Author has many Books
+ .HasForeignKey(b => b.AuthorId) //AuthorId is ForeignKey in Books
+```
+
+### Many to Many  
+
+
 

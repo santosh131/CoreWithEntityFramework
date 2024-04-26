@@ -1,0 +1,106 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model CoreMVCDataAnnotationApp.Models.RegistrationViewModel
+
+<div id="parentContainer">
+    <h1>Parent View</h1>
+    <input type="hidden" id="hdEmpId" value="@Model.EmployeeId" />
+    <input type="hidden" id="hdTabId" value="@Model.TabId" />
+    @*<a class="nav-link active" id="employee-tab" href="#Employee" aria-controls="employee" asp-controller="EmployeeRegistraion" asp-action="Employee">Employee</a>
+    <a class="nav-link" id="dependents-tab" href="#Dependents"  aria-controls="dependents" asp-controller="EmployeeRegistraion" asp-action="Employee">Dependents</a>*@
+    <ul class="list-group list-group-horizontal">
+        <li class="list-group-item">
+            <a class="nav-link active" id="employee-tab" data-toggle='tab' href="#Employee" aria-controls="1">Employee</a>
+        </li>
+        <li class="list-group-item">
+            <a class="nav-link" id="dependents-tab" data-toggle='tab' href="#Dependents" aria-controls="2">Dependents</a>
+        </li>
+    </ul>
+</div>
+
+<div id="childContainer">
+</div>
+
+
+<div data-toggle="buttons" class="container">
+    <div class="row">
+        <div class="col-md-4">
+
+        </div>
+        <div class="col-md-4 fles">
+            <div>
+                <button type="button" id="btnBackTabs" class="btn btn-primary">Back</button>
+            </div>
+            <div>
+                <button type="button" id="btnNextTabs" class="btn btn-primary">Next</button>
+            </div>
+        </div>
+    
+        <div class="col-md-4">
+        </div>
+    </div>
+</div>
+
+<div> </div>
+@section SCripts{
+    <script>
+        var tabs = {
+            Employee: "1",
+            Dependents: "2",
+        }
+        var load = function (url, childContainerId) {
+            //$("#" + childContainerId).load(url);
+            fetch(url).then((response) => {
+                return response.text();
+            }).then((result) => {
+                $("#" + childContainerId).html(result);
+            });
+        }
+        var postData = function (url, data, childContainerId) {
+            console.log("post");
+            fetch(url, {
+                method: 'POST',
+                body: data
+            }).then((response) => {
+                return response.text();
+            }).then((result) => {
+                //$("#hdTabId").val(tabs.Dependents);
+                $("#" + childContainerId).html(result);
+            });
+        }
+        var SetTabId = function (tabId) {
+            $("#hdTabId").val(tabId);
+            if (tabId > 1) {
+                $("div[data-toggle='buttons']").show();
+            }
+            else{
+                $("div[data-toggle='buttons']").hide();
+            }
+        }
+        $(function () {
+            $(document).ready(function () {
+                loadControl($("#hdTabId").val(), $("#hdEmpId").val());
+            });
+
+            $("a[data-toggle='tab']").click(function (e) {
+                loadControl($(this).attr("aria-controls"), $("#hdEmpId").val());
+                e.preventDefault();
+            });
+
+
+            function loadControl(tabId, employeeId) {
+                switch (tabId) {
+                    case tabs.Employee:
+                        load(`/EmployeeRegistration/Employee?employeeId=${employeeId}`, "childContainer");
+                        SetTabId(tabs.Employee);
+                        break;
+                    case tabs.Dependents:
+                        load(`/EmployeeRegistration/Dependents?employeeId=${employeeId}`, "childContainer");
+                        SetTabId(tabs.Dependents);
+                        break;
+                }
+            }
+        });
+    </script>
+}
