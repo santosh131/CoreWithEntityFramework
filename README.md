@@ -6,12 +6,29 @@ b) Database -First
 EF core uses provider model to access many different databases. EF Core includes providers such as Nuget pacakges which we need to install  
 
 DB: **Sql Server**  
-Nuget: **Microsoft.EntityFrameworkCore.SqlServer**  
+Nuget:   
+**Microsoft.EntityFrameworkCore**  
+**Microsoft.EntityFrameworkCore.SqlServer**  
 
 Domain Class: Includes core functionality & business rules of application  
 Entities: Are mapped to corresponding tables in database  
 
 To treat the domain classes as entities we need to include them as DbSet<T> properties in DBContext class.  
+# Steps  
+> 1. Create Domain classes  
+- By default, entity framework core maps POCO classes to tables using a set of conventions, it can be overridden by DataAnnotations or FluenApi.    
+> 2. Create DBcontext class 
+- Constructor **(DbContextOptions options) : base(options)**  
+- If needed implement **OnModelCreating(ModelBuilder modelBuilder)** - for FluentApi  
+- Create Entities **Properties with DbSet**  
+> 3. Update **Program.cs**  
+```
+.Services.AddDbContext<EmployeeContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("myconnectionstring"));
+});
+```  
+> 4. After enabling the migrations, run the commands mentioned below  
 
 # Migrations
 EF core migrations are a set of commands which can be executed in **package manager console** or .**Net core CLI**  
@@ -32,7 +49,7 @@ Nuget: **Microsot.EntityframeworkCore.Tools**
 |-------------------------	|----------------------------------	|
 | Script-Migration        	| dotnet ef migrations script      	|  
 
-
+|-------------------------------------------------------------- |  
 # Navigation  
 Navigations comes in  two forms
 ## Reference  
@@ -142,17 +159,36 @@ public class Tag {
   
 > Foreign Key properties can be configured by using HasFoerignKey method which takes lambda expression that represents the property to be used as properties.
 
-| Method          	| Usage                                                    	|
-|-----------------	|----------------------------------------------------------	|
-| HasKey          	| Property as Primary Key                                  	|
-| HasForeignKey   	| Property as Foreign Key                                  	|
-| HasColumnName   	| Configures database column name of the property          	|
-| HasColumnType   	| Configures database column type of the property          	|
-| HasDefaultValue 	| default value for a database column mapped to a property 	|
-| HasOne          	| Represents one side one to many relationship             	|
-| WithMany        	| Represents many side of one to many relationship         	|
-| HasMany         	| Represents many side of one to many relationship         	|
-| WithOne         	| Represents one side one to many relationship             	|  
+| Method          	| Usage                                                         	|
+|-----------------	|---------------------------------------------------------------	|
+| HasKey          	| Property as Primary Key                                       	|
+| HasForeignKey   	| Property as Foreign Key                                       	|
+| HasColumnName   	| Configures database column name of the property               	|
+| HasColumnType   	| Configures database column type of the property               	|
+| HasDefaultValue 	| default value for a database column mapped to a property      	|
+| HasOne          	| Represents one side of one to many or one to one relationship 	|
+| WithMany        	| Represents many side of one to many relationship              	|
+| HasMany         	| Represents many side of one to many relationship              	|
+| WithOne         	| Represents one side one to many or one to one relationship    	|
+
+> Consider the following domain classes  
+
+```
+// Principal (parent)  
+public class Blog  
+{  
+    public int Id { get; set; }  
+    public BlogHeader? Header { get; set; } // Reference navigation to dependent  
+}  
+  
+// Dependent (child)
+public class BlogHeader  
+{  
+    public int Id { get; set; }  
+    public int BlogId { get; set; } // Required foreign key property  
+    public Blog Blog { get; set; } = null!; // Required reference navigation to principal  
+}  
+```
 
 ```
 public class Author{  
@@ -167,6 +203,28 @@ public class Book{
     public int BookId { get; set;}    //Foreign Key  
     public Author? Author { get; set;} //Navigation Property , Reference Navigation  
 }  
+```
+
+```
+public class Post
+{
+    public int Id { get; set; }
+    public List<Tag> Tags { get; } = [];
+    public List<PostTag> PostTags { get; } = [];
+}
+
+public class Tag
+{
+    public int Id { get; set; }
+    public List<Post> Posts { get; } = [];
+    public List<PostTag> PostTags { get; } = [];
+}
+
+public class PostTag
+{
+    public int PostId { get; set; }
+    public int TagId { get; set; }
+}
 ```
 
 ### One to One  
@@ -199,6 +257,11 @@ public class Book{
 ```
 
 ### Many to Many  
-
+```
+.HasMany(t => t.Tags)
+.WithMany(p => p.Posts)
+.UsingEntity("JoiningTableName");
+//.UsingEntity<PostTag>();
+```
 
 
