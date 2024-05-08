@@ -9,7 +9,7 @@ DB: **Sql Server**
 Nuget:   
 **Microsoft.EntityFrameworkCore**  
 **Microsoft.EntityFrameworkCore.SqlServer**  
-**Microsoft.EntityFrameworkCore.Tools**
+**Microsoft.EntityFrameworkCore.Tools**  
 **Microsoft.EntityFrameworkCore.Design**
 
 Domain Class: Includes core functionality & business rules of application  
