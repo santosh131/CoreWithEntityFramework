@@ -27,8 +27,12 @@ namespace EntityFrameworkFluentApi.Models
 
         public int? DepartmentId { get; set; }
 
-        public List<Dependents>? Dependents { get; set; }
+        public List<Dependent>? Dependents { get; set; }
 
         public Address? Address { get; set; }
+
+        public List<Training> Trainings { get; set; } = new List<Training>();
+
+        public List<EmployeeTraining> EmployeeTrainings { get; set; } = new List<EmployeeTraining>();
     }
 }

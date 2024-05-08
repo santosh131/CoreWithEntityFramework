@@ -9,6 +9,8 @@ DB: **Sql Server**
 Nuget:   
 **Microsoft.EntityFrameworkCore**  
 **Microsoft.EntityFrameworkCore.SqlServer**  
+**Microsoft.EntityFrameworkCore.Tools**
+**Microsoft.EntityFrameworkCore.Design**
 
 Domain Class: Includes core functionality & business rules of application  
 Entities: Are mapped to corresponding tables in database  
@@ -109,6 +111,7 @@ public class Tag {
 ```  
 
 # Configuring Domain Classes
+- A class with property Id or {className}Id is considered as PrimaryKey by convention
 - DataAnnotation Attributes
 - FluentApi
 
@@ -157,7 +160,7 @@ public class Tag {
  
 ## FluentApi  
   
-> Foreign Key properties can be configured by using HasFoerignKey method which takes lambda expression that represents the property to be used as properties.
+> Foreign Key properties can be configured by using HasForeignKey method which takes lambda expression that represents the property to be used as properties.
 
 | Method          	| Usage                                                         	|
 |-----------------	|---------------------------------------------------------------	|
@@ -171,97 +174,114 @@ public class Tag {
 | HasMany         	| Represents many side of one to many relationship              	|
 | WithOne         	| Represents one side one to many or one to one relationship    	|
 
-> Consider the following domain classes  
+> Consider the following domain classes    
+- One to One (Employee, Address)  
+- One to Many (Employee, Dependent)  
+- Many to Many - (Employee, Training) , EmployeeTraining (Joining table)  
 
 ```
 // Principal (parent)  
-public class Blog  
-{  
-    public int Id { get; set; }  
-    public BlogHeader? Header { get; set; } // Reference navigation to dependent  
-}  
-  
-// Dependent (child)
-public class BlogHeader  
-{  
-    public int Id { get; set; }  
-    public int BlogId { get; set; } // Required foreign key property  
-    public Blog Blog { get; set; } = null!; // Required reference navigation to principal  
-}  
-```
-
-```
-public class Author{  
-    public int AuthorId { get; set;}    //Primary Key  
-    public string Name { get; set;}  
-    public List<Book>? Books { get; set;} //Navigation Property , Collection Navigation
-}  
-  
-public class Book{  
-    public int BookId { get; set;}    //Primary Key  
-    public string Name { get; set;}  
-    public int BookId { get; set;}    //Foreign Key  
-    public Author? Author { get; set;} //Navigation Property , Reference Navigation  
-}  
-```
-
-```
-public class Post
+public class Employee
 {
-    public int Id { get; set; }
-    public List<Tag> Tags { get; } = [];
-    public List<PostTag> PostTags { get; } = [];
+    public int EmployeeId { get; set; }  
+    public Address? Address { get; set; } //Reference navigation to dependent
+}  
+
+//Address (child)
+public class Address
+{
+    public int AddressId { get; set; }  
+    public int EmployeeId { get; set; }//Required foreign key  
+    public Employee Employee { get; set; } = null;  // Required reference navigation to principal
+}
+```
+
+```
+// Principal (parent)  
+public class Employee
+{  
+    public int EmployeeId { get; set;}    //Primary Key  
+    public List<Dependent>? Dependents { get; set;} //Navigation Property , Collection Navigation
+}  
+
+//Dependent (child)
+public class Dependent
+{  
+    public int DependentId { get; set;}    //Primary Key  
+    public int EmployeeId { get; set;}    //Foreign Key  
+    public Employee? Employee { get; set;} //Navigation Property , Reference Navigation  
+}  
+```
+
+```
+public class Employee
+{  
+    public int EmployeeId { get; set;}    //Primary Key  
+    
+    public List<Training> Trainings { get; set; } = new List<Training>();  
+    public List<EmployeeTraining> EmployeeTrainings { get; set; } = new List<EmployeeTraining>();  
+}  
+
+public class Training
+{
+    public int TrainingId { get; set; }//Primary Key    
+    public string TrainingName { get; set; } =string.Empty;  
+
+    public List<EmployeeTraining> EmployeeTrainings { get; set; } = new List<EmployeeTraining>();  
+    public List<Employee> Employees { get; set; } = new List<Employee>();  
 }
 
-public class Tag
+public class EmployeeTraining
 {
-    public int Id { get; set; }
-    public List<Post> Posts { get; } = [];
-    public List<PostTag> PostTags { get; } = [];
-}
+    public int Id { get; set; }//Primary Key  
 
-public class PostTag
-{
-    public int PostId { get; set; }
-    public int TagId { get; set; }
+    public int EmployeeId { get; set; }  
+    public Employee Employee { get; set; }  
+
+    public int TrainingId { get; set; }  
+    public Training Training { get; set; }  
+
 }
 ```
 
 ### One to One  
 - Configuring Parent to Child - HasOne/Withone pattern
 ```
- .HasOne(a => a.Header)
- .WithOne(b => b.Blog)
- .HasForeignKey<BlogHeader>(b => b.BlogId)
+ .HasOne(a => a.Address)
+ .WithOne(b => b.Employee)
+ .HasForeignKey<Address>(b => b.EmployeeId)
 ```
 - Configuring Child to Parent - HasOne/Withone pattern
 ```
- .HasOne(b => b.Blog)
- .WithOne(a => a.Header)
- .HasForeignKey<BlogHeader>(b => b.BlogId)
+ .HasOne(b => b.Employee)
+ .WithOne(a => a.Address)
+ .HasForeignKey<Employee>(b => b.EmployeeId)
 ```
   
 ### One to Many  
 - Configuring Parent to Child  - HasMany/WithOne pattern
 ```
- .HasMany(a => a.Books) // Author has many Books
- .WithOne(b => b.Author) //Book is associated with one Author
- .HasForeignKey(b => b.AuthorId) //AuthorId is ForeignKey in Books
+ .HasMany(a => a.Dependents) // Employee has many Dependents
+ .WithOne(b => b.Employee) //Dependent is associated with one Employee
+ .HasForeignKey(b => b.EmployeeId) //EmployeeId is ForeignKey in Dependents
 ```
   
 - Configuring Child to Parent  - HasOne/WithMany pattern
 ```
- .HasOne(a => a.Author) //Book is associated with one Author
- .WithMany(b => b.Books) // Author has many Books
- .HasForeignKey(b => b.AuthorId) //AuthorId is ForeignKey in Books
+ .HasOne(a => a.Employee) //Employee is associated with one Employee
+ .WithMany(b => b.Dependents) // Employee has many Dependents
+ .HasForeignKey(b => b.EmployeeId) //EmployeeId is ForeignKey in Dependents
 ```
 
 ### Many to Many  
 ```
-.HasMany(t => t.Tags)
-.WithMany(p => p.Posts)
-.UsingEntity("JoiningTableName");
-//.UsingEntity<PostTag>();
+//explicit configuration
+.HasMany(e => e.Trainings)  
+.WithMany(e => e.Employees)  
+.UsingEntity<EmployeeTraining>(  
+        l => l.HasOne<Training>(e => e.Training).WithMany(e => e.EmployeeTrainings).HasForeignKey(e => e.EmployeeId),  
+        r => r.HasOne<Employee>(e => e.Employee).WithMany(e => e.EmployeeTrainings).HasForeignKey(e => e.TrainingId)  
+    );  
 ```
 
 

@@ -4,9 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace EntityFrameworkFluentApi.Models
 {
-    public class Dependents
+    public class Dependent
     {
-        public int? DependentId { get; set; }
+        public int DependentId { get; set; }
 
         public string? FirstName { get; set; }
         public string? LastName { get; set; }

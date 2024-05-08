@@ -17,7 +17,7 @@ namespace EntityFrameworkFluentApi.Controllers
 
         public IActionResult Index()
         {
-           var e= _employeeContext.Employees
+           var e= _employeeContext.Employee
                 .Include(d=>d.Dependents)
                 .Include(a=>a.Address)
                 .ToList();
